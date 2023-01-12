@@ -18,7 +18,6 @@ class AddVariableWizard(ctk.CTkToplevel):
     def __init__(self):
         super().__init__()
         self.variable = Variable("", "", "", False)
-        self.recent_entry = None
         self.title("Add Variable")
         self.resizable(False, True)
         self.tab_view = ctk.CTkTabview(self,
@@ -27,16 +26,17 @@ class AddVariableWizard(ctk.CTkToplevel):
                                        corner_radius=15,
                                        command=self.check_page
                                        )
-        self.greek_keyboard = GreekKeyboard(self)
-        self.greek_keyboard.pack(pady=(0, 10),
-                                 side='bottom')
-        self.tab_view.segmented_button.configure(font=(font_string, 12))
+        self.tab_view._segmented_button.configure(font=(font_string, 12))
         self.tab_view.pack(pady=(25, 25),
                            padx=25)
 
         tab_names = ['Symbol', 'Subscript', 'Notation', 'Value', 'Units', 'Overview']
         for i in tab_names:
             self.tab_view.add(i)
+        self.recent_entry = self.bind_entries()[0]
+        self.greek_keyboard = GreekKeyboard(self, self.recent_entry)
+        self.greek_keyboard.pack(pady=(0, 10),
+                                 side='bottom')
 
         # self.tab_view.segmented_button._buttons_dict["Value"].configure(state="disabled")
 
@@ -181,6 +181,7 @@ class AddVariableWizard(ctk.CTkToplevel):
     # Misc
 
     def check_page(self):
+        self.bind_entries()
         if self.tab_view.get() in ['Symbol', 'Subscript', 'Value']:
             self.greek_keyboard.pack(pady=(0, 10))
         else:
@@ -189,13 +190,16 @@ class AddVariableWizard(ctk.CTkToplevel):
             else:
                 pass
 
-    def bind_entries(self, tab):
-        for i in tab.winfo_children():
+    def bind_entries(self):
+        tab_children = self.tab_view.tab(self.tab_view.get()).winfo_children()
+        for i in enumerate(tab_children):
             if type(i) is ctk.windows.widgets.ctk_entry.CTkEntry:
                 i.bind('<FocusIn>',
                        command=lambda event, x=i[1]: self.entry_broadcast(x))
+                print(f'Entry {i[0]} bound')
             else:
                 pass
+        return tab_children
 
     def entry_broadcast(self, entry):
         self.recent_entry = entry

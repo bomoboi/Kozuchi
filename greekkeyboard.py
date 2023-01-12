@@ -99,8 +99,8 @@ class GreekKeyboard(ctk.CTkFrame):
             for n, b in enumerate(self.grid_slaves()[1:-1]):
                 b.configure(text=f'{greek_alphabet[-n - 1][0]}')
 
-    def keyboard_button_func(self, btn, entry):
-        entry.insert('end', btn.cget('text'))
+    def keyboard_button_func(self, btn):
+        self.entry.insert('end', btn.cget('text'))
 
 
 if __name__ == '__main__':
