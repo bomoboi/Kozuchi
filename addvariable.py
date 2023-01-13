@@ -2,12 +2,11 @@
 # Finished ???
 
 import customtkinter as ctk
-import inspect
+
+from greekkeyboard import GreekKeyboard
+from variable import Variable
 
 font_string = "Roboto"
-from variable import Variable
-from greekkeyboard import GreekKeyboard
-
 ctk.set_appearance_mode('dark')
 ctk.set_default_color_theme('dark-blue')
 
@@ -17,7 +16,7 @@ class AddVariableWizard(ctk.CTkToplevel):
 
     def __init__(self):
         super().__init__()
-        self.variable = Variable("", "", "", False)
+        self.variable = Variable
         self.title("Add Variable")
         self.resizable(False, True)
         self.tab_view = ctk.CTkTabview(self,
@@ -27,36 +26,78 @@ class AddVariableWizard(ctk.CTkToplevel):
                                        command=self.check_page
                                        )
         self.tab_view._segmented_button.configure(font=(font_string, 12))
-        self.tab_view.pack(pady=(25, 25),
+        self.tab_view.pack(pady=25,
                            padx=25)
 
-        tab_names = ['Symbol', 'Subscript', 'Notation', 'Value', 'Units', 'Overview']
+        tab_names = ['Symbol', 'Subscript', 'Notation', 'Constant', 'Value', 'Units', 'Overview']
         for i in tab_names:
             self.tab_view.add(i)
-        self.recent_entry = self.bind_entries()[0]
-        self.greek_keyboard = GreekKeyboard(self, self.recent_entry)
-        self.greek_keyboard.pack(pady=(0, 10),
-                                 side='bottom')
 
-        # self.tab_view.segmented_button._buttons_dict["Value"].configure(state="disabled")
+        self.tab_view.segmented_button._buttons_dict["Value"].configure(state="disabled")
 
         """Pages"""
 
         # Symbol Page
         symbol_page = self.tab_view.tab("Symbol")
 
-        symbol_entry = ctk.CTkEntry(symbol_page,
-                                    height=36,
-                                    width=36,
-                                    )
-        symbol_entry.pack()
+        self._symbol_heading_frame = ctk.CTkFrame(symbol_page)
+
+        self._symbol_label = ctk.CTkLabel(self._symbol_heading_frame,
+                                          text="Enter the symbol of the variable",
+                                          font=(font_string, 28))
+
+        self._symbol_entry = ctk.CTkEntry(symbol_page,
+                                          height=72,
+                                          width=72,
+                                          font=(font_string, 56))
+
+        self._symbol_button = ctk.CTkButton(symbol_page,
+                                            text='Submit',
+                                            font=(font_string, 24),
+                                            command=self.update_symbol)
+
+        self._symbol_heading_frame.pack(padx=25,
+                                        pady=25)
+        self._symbol_label.pack(padx=20)
+
+        self._symbol_entry.pack(pady=35)
+
+        self._symbol_button.pack(side='bottom',
+                                 fill='x',
+                                 pady=10)
 
         # Subscript Page
         subscript_page = self.tab_view.tab("Subscript")
+
+        self._subscript_heading_frame = ctk.CTkFrame(subscript_page)
+
+        self._subscript_heading = ctk.CTkLabel(self._subscript_heading_frame,
+                                          text="Enter the subscript of the variable",
+                                          font=(font_string, 28))
+
+        self._subscript_entry = ctk.CTkEntry(subscript_page,
+                                          height=72,
+                                          width=72,
+                                          font=(font_string, 56))
+
+        self._subscript_button = ctk.CTkButton(subscript_page,
+                                            text='Submit',
+                                            font=(font_string, 24),
+                                            command=self.update_symbol)
+
+        self._subscript_heading_frame.pack(padx=25,
+                                        pady=25)
+        self._subscript_heading.pack(padx=20)
+
+        self._subscript_entry.pack(pady=35)
+
+        self._subscript_button.pack(side='bottom',
+                                 fill='x',
+                                 pady=10)
         # Notation Page
         notation_page = self.tab_view.tab("Notation")
 
-        """ Constant Page
+        # Constant Page
         constant_page = self.tab_view.tab("Constant")
         constant_heading = ctk.CTkLabel(constant_page,
                                         text="Is the variable a constant?",
@@ -76,19 +117,18 @@ class AddVariableWizard(ctk.CTkToplevel):
         constant_heading.pack(pady=75)
         y_button.place(x=20, y=250)
         n_button.place(x=355, y=250)
-        """
 
         # Value Page
         value_page = self.tab_view.tab("Value")
 
-        heading_frame = ctk.CTkFrame(value_page,
-                                     corner_radius=10,
-                                     width=550)
+        value_heading_frame = ctk.CTkFrame(value_page,
+                                           corner_radius=10,
+                                           width=550)
 
-        value_heading = ctk.CTkLabel(heading_frame,
+        value_heading = ctk.CTkLabel(value_heading_frame,
                                      text="Input the value of the constant below",
                                      font=(font_string, 28))
-        value_subheading = ctk.CTkLabel(heading_frame,
+        value_subheading = ctk.CTkLabel(value_heading_frame,
                                         text="(Assume SI Units)",
                                         font=(font_string, 18))
         entry_frame = ctk.CTkFrame(value_page,
@@ -109,10 +149,10 @@ class AddVariableWizard(ctk.CTkToplevel):
         back_button = ctk.CTkButton(value_page,
                                     text="Back")
 
-        heading_frame.grid(row=0,
-                           column=0,
-                           sticky=['e', 'w'],
-                           pady=(60, 0))
+        value_heading_frame.grid(row=0,
+                                 column=0,
+                                 sticky=['e', 'w'],
+                                 pady=(60, 0))
         value_heading.pack(padx=25,
                            pady=(10, 5))
         value_subheading.pack(pady=(0, 5))
@@ -146,12 +186,23 @@ class AddVariableWizard(ctk.CTkToplevel):
         # Overview Page
         overview_page = self.tab_view.tab("Overview")
 
+        self.greek_keyboard = GreekKeyboard(self, self.bind_entries(self.tab_view.tab(self.tab_view.get())))
+        self.greek_keyboard.pack(pady=(0, 10),
+                                 side='bottom')
+
     """Functions"""
 
     # Symbol
+    def update_symbol(self):
+        self.variable.symbol = self._symbol_entry.get().strip()
+        self._symbol_button.configure(text='Update')
+        self.tab_view.set("Subscript")
 
     # Subscript
-
+    def update_subscript(self):
+        self.variable.subscript = self._subscript_entry.get().strip()
+        self._subscript_button.configure(text="Update")
+        self.tab_view.set("Notation")
     # Notation
 
     # Constant
@@ -181,7 +232,7 @@ class AddVariableWizard(ctk.CTkToplevel):
     # Misc
 
     def check_page(self):
-        self.bind_entries()
+        self.bind_entries(self.tab_view.tab(self.tab_view.get()))
         if self.tab_view.get() in ['Symbol', 'Subscript', 'Value']:
             self.greek_keyboard.pack(pady=(0, 10))
         else:
@@ -190,19 +241,20 @@ class AddVariableWizard(ctk.CTkToplevel):
             else:
                 pass
 
-    def bind_entries(self):
-        tab_children = self.tab_view.tab(self.tab_view.get()).winfo_children()
-        for i in enumerate(tab_children):
-            if type(i) is ctk.windows.widgets.ctk_entry.CTkEntry:
-                i.bind('<FocusIn>',
-                       command=lambda event, x=i[1]: self.entry_broadcast(x))
-                print(f'Entry {i[0]} bound')
+    def bind_entries(self, container):
+        tab_children = container.winfo_children()
+        for child in tab_children:
+            if isinstance(child, ctk.CTkEntry):
+                child.bind('<FocusIn>',
+                           command=lambda event, o=child: self.change_entry(o))
+            if isinstance(child, ctk.CTkFrame):
+                self.bind_entries(child)
             else:
                 pass
         return tab_children
 
-    def entry_broadcast(self, entry):
-        self.recent_entry = entry
+    def change_entry(self, entry):
+        self.greek_keyboard.entry = entry
 
 
 if __name__ == '__main__':

@@ -100,7 +100,7 @@ class GreekKeyboard(ctk.CTkFrame):
                 b.configure(text=f'{greek_alphabet[-n - 1][0]}')
 
     def keyboard_button_func(self, btn):
-        self.entry.insert('end', btn.cget('text'))
+        self.entry.insert(ctk.END, btn.cget('text'))
 
 
 if __name__ == '__main__':

@@ -1,14 +1,16 @@
 # Started 1.7.22
 # Finished . .
-from dataclasses import dataclass, field
+import pydantic
+from typing import Optional
 
 
-@dataclass
-class Variable:
+class Variable(pydantic.BaseModel):
     symbol: str
     subscript: str
     notation: str
-    units: str = None
+    constant: Optional[bool]
+    value: Optional[float]
+    units: Optional[str]
 
 
 if __name__ == '__main__':
